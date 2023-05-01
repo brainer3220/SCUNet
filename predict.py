@@ -28,10 +28,10 @@ class Predictor(BasePredictor):
         }
         self.models = {}
 
-        for model_name in self.model_paths.keys():
+        for model_name, value in self.model_paths.items():
             n_channels = 1 if model_name.startswith("grayscale") else 3
             model = net(in_nc=n_channels, config=[4, 4, 4, 4, 4, 4, 4], dim=64)
-            model.load_state_dict(torch.load(self.model_paths[model_name]), strict=True)
+            model.load_state_dict(torch.load(value), strict=True)
             self.models[model_name] = model
 
     def predict(
@@ -94,7 +94,7 @@ class Predictor(BasePredictor):
             img_E = model(img_L)
         elif not x8 and (img_L.size(2) // 8 != 0 or img_L.size(3) // 8 != 0):
             img_E = utils_model.test_mode(model, img_L, refield=64, mode=5)
-        elif x8:
+        else:
             img_E = utils_model.test_mode(model, img_L, mode=3)
 
         img_E = util.tensor2uint(img_E)

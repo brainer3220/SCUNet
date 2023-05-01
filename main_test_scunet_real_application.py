@@ -37,8 +37,8 @@ def main():
 
     n_channels = 3
 
-    result_name = args.testset_name + '_' + args.model_name     # fixed
-    model_path = os.path.join(args.model_zoo, args.model_name+'.pth')
+    result_name = f'{args.testset_name}_{args.model_name}'
+    model_path = os.path.join(args.model_zoo, f'{args.model_name}.pth')
 
     # ----------------------------------------
     # L_path, E_path
@@ -48,7 +48,9 @@ def main():
     util.mkdir(E_path)
 
     logger_name = result_name
-    utils_logger.logger_info(logger_name, log_path=os.path.join(E_path, logger_name+'.log'))
+    utils_logger.logger_info(
+        logger_name, log_path=os.path.join(E_path, f'{logger_name}.log')
+    )
     logger = logging.getLogger(logger_name)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -67,9 +69,9 @@ def main():
 
     logger.info('Model path: {:s}'.format(model_path))
     number_parameters = sum(map(lambda x: x.numel(), model.parameters()))
-    logger.info('Params number: {}'.format(number_parameters))
+    logger.info(f'Params number: {number_parameters}')
 
-    logger.info('model_name:{}'.format(args.model_name))
+    logger.info(f'model_name:{args.model_name}')
     logger.info(L_path)
     L_paths = util.get_image_paths(L_path)
 
@@ -103,7 +105,7 @@ def main():
         # ------------------------------------
         # save results
         # ------------------------------------
-        util.imsave(img_E, os.path.join(E_path, img_name+'.png'))
+        util.imsave(img_E, os.path.join(E_path, f'{img_name}.png'))
 
 if __name__ == '__main__':
 

@@ -40,9 +40,9 @@ def main():
 
     n_channels = 1        # fixed for grayscale image
 
-    result_name = args.testset_name + '_' + args.model_name     # fixed
+    result_name = f'{args.testset_name}_{args.model_name}'
     border = 0        # shave boader to calculate PSNR and SSIM
-    model_path = os.path.join(args.model_zoo, args.model_name+'.pth')
+    model_path = os.path.join(args.model_zoo, f'{args.model_name}.pth')
 
     # ----------------------------------------
     # L_path, E_path, H_path
@@ -55,10 +55,12 @@ def main():
     if H_path == L_path:
         args.need_degradation = True
     logger_name = result_name
-    utils_logger.logger_info(logger_name, log_path=os.path.join(E_path, logger_name+'.log'))
+    utils_logger.logger_info(
+        logger_name, log_path=os.path.join(E_path, f'{logger_name}.log')
+    )
     logger = logging.getLogger(logger_name)
 
-    need_H = True if H_path is not None else False
+    need_H = H_path is not None
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # ----------------------------------------
@@ -74,13 +76,15 @@ def main():
     model = model.to(device)
     logger.info('Model path: {:s}'.format(model_path))
     number_parameters = sum(map(lambda x: x.numel(), model.parameters()))
-    logger.info('Params number: {}'.format(number_parameters))
+    logger.info(f'Params number: {number_parameters}')
 
     test_results = OrderedDict()
     test_results['psnr'] = []
     test_results['ssim'] = []
 
-    logger.info('model_name:{}, image sigma:{}'.format(args.model_name, args.noise_level_img))
+    logger.info(
+        f'model_name:{args.model_name}, image sigma:{args.noise_level_img}'
+    )
     logger.info(L_path)
     L_paths = util.get_image_paths(L_path)
     H_paths = util.get_image_paths(H_path) if need_H else None
@@ -102,7 +106,10 @@ def main():
             np.random.seed(seed=0)  # for reproducibility
             img_L += np.random.normal(0, args.noise_level_img/255., img_L.shape)
 
-        util.imshow(util.single2uint(img_L), title='Noisy image with noise level {}'.format(args.noise_level_img)) if args.show_img else None
+        util.imshow(
+            util.single2uint(img_L),
+            title=f'Noisy image with noise level {args.noise_level_img}',
+        ) if args.show_img else None
 
         img_L = util.single2tensor4(img_L)
         img_L = img_L.to(device)
@@ -116,7 +123,7 @@ def main():
             img_E = model(img_L)
         elif not x8 and (img_L.size(2)//8!=0 or img_L.size(3)//8!=0):
             img_E = utils_model.test_mode(model, img_L, refield=64, mode=5)
-        elif x8:
+        else:
             img_E = utils_model.test_mode(model, img_L, mode=3)
 
         #img_E = model(img_L)
